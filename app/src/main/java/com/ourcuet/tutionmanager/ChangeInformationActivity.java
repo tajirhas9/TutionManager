@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.style.TtsSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,28 +15,63 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class NewTutionRegistrationActivity extends AppCompatActivity {
+public class ChangeInformationActivity extends AppCompatActivity {
+
+    Integer StudentID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_tution_registration);
+        setContentView(R.layout.activity_change_information);
+        NumberPicker StudentTotalDaysNumberPicker = findViewById(R.id.UpdateStudentTotalDaysNumberPicker);
+        NumberPicker StudentDaysCompletedNumberPicker = findViewById(R.id.UpdateStudentDaysCompletedNumberPicker);
+        Button addButton = findViewById(R.id.UpdateButton);
 
-        NumberPicker NewStudentTotalDaysNumberPicker = findViewById(R.id.NewStudentTotalDaysNumberPicker);
-        NumberPicker NewStudentDaysCompletedNumberPicker = findViewById(R.id.NewStudentDaysCompletedNumberPicker);
-        Button addButton = findViewById(R.id.AddButton);
+        SetUpMinMaxNumberPickers(StudentTotalDaysNumberPicker,1,30);
+        SetUpMinMaxNumberPickers(StudentDaysCompletedNumberPicker,0,30);
 
-        SetUpMinMaxNumberPickers(NewStudentTotalDaysNumberPicker,1,30);
-        SetUpMinMaxNumberPickers(NewStudentDaysCompletedNumberPicker,0,30);
+        Intent intent = getIntent();
 
-        NewStudentTotalDaysNumberPicker.setValue(12);
+        StudentID = Integer.parseInt(intent.getStringExtra("StudentID"));
 
+        UpdateUI();
         SetOnClickListener(addButton);
     }
+
+        private void UpdateUI() {
+            TutionInfo tutionInfo = getTutionInfoFromSharedPreference();
+
+            EditText StudentNameField = findViewById(R.id.UpdateStudentNameField);
+            TextView InstitutionField = findViewById(R.id.UpdateInstitutionField);
+            NumberPicker TotalDaysField = findViewById(R.id.UpdateStudentTotalDaysNumberPicker);
+            NumberPicker DaysCompletedField = findViewById(R.id.UpdateStudentDaysCompletedNumberPicker);
+
+            StudentNameField.setText(tutionInfo.StudentName);
+            InstitutionField.setText(tutionInfo.Institution);
+            TotalDaysField.setValue(tutionInfo.TotalDays);
+            DaysCompletedField.setValue(tutionInfo.DaysCompleted);
+
+            Button button = findViewById(R.id.UpdateButton);
+            button.setText("Update Information");
+        }
+
+        //gets only one TutionInfo object with index value StudentID
+        private TutionInfo getTutionInfoFromSharedPreference() {
+            SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
+
+            Gson gson = new Gson();
+
+            String StoredListString = sharedPreference.getString("TutionList", null);
+
+            java.lang.reflect.Type type = new TypeToken<ArrayList< TutionInfo > >(){}.getType();
+
+            ArrayList < TutionInfo > PreStoredList;
+            PreStoredList = gson.fromJson(StoredListString, type);
+
+            return PreStoredList.get(StudentID);
+        }
 
     private void SetOnClickListener(Button addButton) {
 
@@ -58,10 +92,10 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
     }
 
     private boolean formValidationSuccessful() {
-        EditText StudentNameField = findViewById(R.id.StudentNameField);
-        EditText InstitutionField = findViewById(R.id.InstitutionField);
-        NumberPicker TotalDaysNumberPicker = findViewById(R.id.NewStudentTotalDaysNumberPicker);
-        NumberPicker DaysCompletedNumberPicker = findViewById(R.id.NewStudentDaysCompletedNumberPicker);
+        EditText StudentNameField = findViewById(R.id.UpdateStudentNameField);
+        EditText InstitutionField = findViewById(R.id.UpdateInstitutionField);
+        NumberPicker TotalDaysNumberPicker = findViewById(R.id.UpdateStudentTotalDaysNumberPicker);
+        NumberPicker DaysCompletedNumberPicker = findViewById(R.id.UpdateStudentDaysCompletedNumberPicker);
 
         String StudentName = StudentNameField.getText().toString();
         String Institution = InstitutionField.getText().toString();
@@ -77,10 +111,10 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
     }
 
     private TutionInfo GetNewTutionInformation() {
-        EditText StudentNameField = findViewById(R.id.StudentNameField);
-        EditText InstitutionField = findViewById(R.id.InstitutionField);
-        NumberPicker TotalDaysNumberPicker = findViewById(R.id.NewStudentTotalDaysNumberPicker);
-        NumberPicker DaysCompletedNumberPicker = findViewById(R.id.NewStudentDaysCompletedNumberPicker);
+        EditText StudentNameField = findViewById(R.id.UpdateStudentNameField);
+        EditText InstitutionField = findViewById(R.id.UpdateInstitutionField);
+        NumberPicker TotalDaysNumberPicker = findViewById(R.id.UpdateStudentTotalDaysNumberPicker);
+        NumberPicker DaysCompletedNumberPicker = findViewById(R.id.UpdateStudentDaysCompletedNumberPicker);
 
         String StudentName = StudentNameField.getText().toString();
         String Institution = InstitutionField.getText().toString();
@@ -113,7 +147,10 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
 
         sharedPreference.edit().clear();
 
-        TutionList.add(tutionInfo);
+        TutionList.get(StudentID).StudentName = tutionInfo.StudentName;
+        TutionList.get(StudentID).Institution = tutionInfo.Institution;
+        TutionList.get(StudentID).TotalDays = tutionInfo.TotalDays;
+        TutionList.get(StudentID).DaysCompleted= tutionInfo.DaysCompleted;
 
         OverwriteSharedPreference(sharedPreference,TutionList);
 
@@ -169,9 +206,17 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
     }
 
     private void Redirect() {
-        MakeToast("New Student Added");
-        ReturnToMainActivity();
+        MakeToast("Student Information Updated");
+        RedirectToTutionProfileActivity(StudentID);
     }
+
+        private void RedirectToTutionProfileActivity(Integer id) {
+            Intent intent = new Intent(this,TutionProfileActivity.class);
+            intent.putExtra("StudentID", id.toString());
+            Log.v("StudentID ", id.toString());
+            startActivity(intent);
+
+        }
 
     private void MakeToast(String message) {
         Toast.makeText(getApplicationContext() , message, Toast.LENGTH_SHORT).show();
