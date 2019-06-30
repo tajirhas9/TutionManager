@@ -25,7 +25,7 @@
                 android:textSize="18dp"/>
 
             <EditText
-                android:id="@+id/StudentNameField"
+                android:id="@+id/UpdateStudentNameField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter student's Name" />
@@ -45,7 +45,7 @@
                 android:textSize="18dp"/>
 
             <EditText
-                android:id="@+id/InstitutionField"
+                android:id="@+id/UpdateInstitutionField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Enter Institution Name" />
@@ -67,7 +67,7 @@
                 android:layout_marginTop="80dp"/>
 
             <NumberPicker
-                android:id="@+id/NewStudentTotalDaysNumberPicker"
+                android:id="@+id/UpdateStudentTotalDaysNumberPicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
             </NumberPicker>
@@ -82,7 +82,7 @@
                 android:layout_marginTop="80dp"/>
 
             <NumberPicker
-                android:id="@+id/NewStudentDaysCompletedNumberPicker"
+                android:id="@+id/UpdateStudentDaysCompletedNumberPicker"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
             </NumberPicker>
@@ -90,10 +90,10 @@
         </LinearLayout>
 
         <Button
-            android:id="@+id/AddButton"
+            android:id="@+id/UpdateButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add New Student"
+            android:text="Update Information"
             android:layout_gravity="right"/>
 
     </LinearLayout>
