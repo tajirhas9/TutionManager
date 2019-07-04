@@ -90,9 +90,14 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout newLayout = new LinearLayout(this);
 
         TextView textView = SetUpTextView(string,ID);
-        LinearLayout.LayoutParams LayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT , LinearLayout.LayoutParams.WRAP_CONTENT);
-        LayoutParams.setMargins(5,10,0,10);
+        LinearLayout.LayoutParams LayoutParams = getLinearLayoutParametersForNewLayout();
         newLayout.addView(textView,LayoutParams);
+
+        if((NextSerialNumberOfTutionNamesDisplay % 2 == 1))
+            newLayout.setBackgroundColor(getResources().getColor(R.color.CustomGray));
+        else
+            newLayout.setBackgroundColor(getResources().getColor(R.color.CustomWhite));
+
         return newLayout;
     }
 
@@ -116,6 +121,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return textView;
+    }
+
+    private LinearLayout.LayoutParams getLinearLayoutParametersForNewLayout() {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT , LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(5,10,0,10);
+        return layoutParams;
     }
 
     private void AddNewLayoutToExistingLayout(LinearLayout existingLayout, LinearLayout newLayout, LinearLayout.LayoutParams LayoutParameters) {

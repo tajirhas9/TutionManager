@@ -7,16 +7,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.w3c.dom.Text;
-
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class TutionProfileActivity extends AppCompatActivity {
 
@@ -93,9 +92,9 @@ public class TutionProfileActivity extends AppCompatActivity {
         IncreaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateDaysCompletedByOne(1);
-
-                RefreshActivity();
+                //If updated,then refresh. If not updated, don't refresh
+                if(UpdateDaysCompletedByOne(1))
+                    RefreshActivity();
             }
         });
     }
@@ -106,9 +105,9 @@ public class TutionProfileActivity extends AppCompatActivity {
         IncreaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UpdateDaysCompletedByOne(-1);
-
-                RefreshActivity();
+                //if updated,then refresh. Else, don't refresh
+                if(UpdateDaysCompletedByOne(-1))
+                    RefreshActivity();
             }
         });
     }
@@ -126,34 +125,48 @@ public class TutionProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void UpdateDaysCompletedByOne(Integer value) {
+    private boolean UpdateDaysCompletedByOne(Integer value) {
 
         SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
 
-        ArrayList < TutionInfo > TutionList = getPreStoredInformationFromSharedPreference(sharedPreference);
+        ArrayList < TutionInfo > TutionList = getPreStoredTutionInformationFromSharedPreference(sharedPreference);
+        ArrayList <TutionDayInformation> TutionDays = getPreStoredDayInformationFromSharedPreference(sharedPreference);
 
         TutionList.get(StudentID).DaysCompleted = TutionList.get(StudentID).DaysCompleted + value;
 
-        if(TutionList.get(StudentID).DaysCompleted >= 0)
-            OverwriteSharedPreference(sharedPreference, TutionList);
-        else
+        if(TutionList.get(StudentID).DaysCompleted >= 0) {
+
+            if(value == 1)
+                TutionDays.get(StudentID).DaysWentToTution.push(LocalDate.now());
+            else
+                TutionDays.get(StudentID).DaysWentToTution.pop();
+
+            OverwriteSharedPreference(sharedPreference, TutionList,TutionDays);
+            return true;
+        }
+        else {
             MakeToast("You have not completed any day this month");
+            return false;
+        }
     }
 
     private void ResetDaysCompletedByOne() {
         SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
 
-        ArrayList < TutionInfo > TutionList = getPreStoredInformationFromSharedPreference(sharedPreference);
+        ArrayList < TutionInfo > TutionList = getPreStoredTutionInformationFromSharedPreference(sharedPreference);
+
+        ArrayList<TutionDayInformation> TutionDays = getPreStoredDayInformationFromSharedPreference(sharedPreference);
+
 
         TutionList.get(StudentID).DaysCompleted = 0;
 
-        OverwriteSharedPreference(sharedPreference, TutionList);
+        OverwriteSharedPreference(sharedPreference, TutionList,TutionDays);
     }
 
 
     //Returns overall tutionlist
 
-    public ArrayList< TutionInfo > getPreStoredInformationFromSharedPreference(SharedPreferences sharedPreference) {
+    public ArrayList< TutionInfo > getPreStoredTutionInformationFromSharedPreference(SharedPreferences sharedPreference) {
 
         Gson gson = new Gson();
 
@@ -172,14 +185,38 @@ public class TutionProfileActivity extends AppCompatActivity {
         return  PreStoredList;
     }
 
-    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information) {
+    private ArrayList< TutionDayInformation > getPreStoredDayInformationFromSharedPreference(SharedPreferences sharedPreferences) {
+        Gson gson = new Gson();
+
+        String keyOfSharedPreferences = "TutionDays";
+
+        String StoredDaysString = sharedPreferences.getString(keyOfSharedPreferences , null);
+
+        java.lang.reflect.Type type = new TypeToken<ArrayList<TutionDayInformation> >() {}.getType();
+
+        ArrayList < TutionDayInformation > PreStoredDays;
+
+        if(StoredDaysString != null)
+            PreStoredDays = gson.fromJson(StoredDaysString , type);
+        else
+            PreStoredDays = new ArrayList<>();
+
+        return PreStoredDays;
+    }
+
+    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays) {
         Gson gson = new Gson();
         SharedPreferences.Editor editor = sharedPreference.edit();
 
+        //Apply to tutionDays
         editor.clear();
         editor.putString("TutionList", gson.toJson(information));
         editor.apply();
 
+        //Apply to add days
+
+        editor.putString("TutionDays", gson.toJson(TutionDays));
+        editor.apply();
     }
 
     private void MakeToast(String message) {

@@ -9,7 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ChangeInformationActivity"></activity>
+        <activity android:name=".ListOfDaysActivity"></activity>
+        <activity android:name=".ChangeInformationActivity" />
         <activity android:name=".TutionProfileActivity" />
         <activity android:name=".NewTutionRegistrationActivity" />
         <activity
