@@ -2,11 +2,15 @@ package com.ourcuet.tutionmanager;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -23,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
+
+    Integer NextSerialNumberOfTutionNamesDisplay = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,13 +91,22 @@ public class MainActivity extends AppCompatActivity {
 
         TextView textView = SetUpTextView(string,ID);
         LinearLayout.LayoutParams LayoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT , LinearLayout.LayoutParams.WRAP_CONTENT);
+        LayoutParams.setMargins(5,10,0,10);
         newLayout.addView(textView,LayoutParams);
         return newLayout;
     }
 
     private TextView SetUpTextView(String string,final Integer ID) {
         TextView textView = new TextView(this);
-        textView.setText(string);
+
+        SpannableString convertedString;
+
+        if(ID != -1)
+            convertedString = FormatStringWithSerialNumberAndDetails(string);
+        else
+            convertedString = new SpannableString(string);
+
+        textView.setText(convertedString);
         textView.setTextSize(20f);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,6 +141,23 @@ public class MainActivity extends AppCompatActivity {
         return  PreStoredList;
     }
 
+    private SpannableString FormatStringWithSerialNumberAndDetails(String string) {
+        NextSerialNumberOfTutionNamesDisplay++;
+        string = NextSerialNumberOfTutionNamesDisplay.toString() + ". " + string;
+
+        string = string + "\t\t\t";
+
+        int StartIndexOfDetailsText = string.length();
+
+        string = string + "(Tap for details)";
+
+        SpannableString spannableString = new SpannableString(string);
+
+        spannableString.setSpan(new RelativeSizeSpan(0.5f),StartIndexOfDetailsText, string.length(),0);
+        spannableString.setSpan(new ForegroundColorSpan(Color.BLUE),StartIndexOfDetailsText, string.length(),0);
+
+        return spannableString;
+    }
 
     private void RedirectToRegistrationActivity() {
         Intent intent = new Intent(this,NewTutionRegistrationActivity.class);
