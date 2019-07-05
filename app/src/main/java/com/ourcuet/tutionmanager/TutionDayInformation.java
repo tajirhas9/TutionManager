@@ -1,11 +1,13 @@
 package com.ourcuet.tutionmanager;
 
-import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Stack;
 
 public class TutionDayInformation {
 
-    Stack<LocalDate> DaysWentToTution;
+    Integer tutionID;
+    ArrayList<String> DaysWentToTution;
 
     public TutionDayInformation() {
 

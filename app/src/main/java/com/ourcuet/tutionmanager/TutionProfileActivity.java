@@ -13,9 +13,13 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class TutionProfileActivity extends AppCompatActivity {
 
@@ -136,10 +140,13 @@ public class TutionProfileActivity extends AppCompatActivity {
 
         if(TutionList.get(StudentID).DaysCompleted >= 0) {
 
-            if(value == 1)
-                TutionDays.get(StudentID).DaysWentToTution.push(LocalDate.now());
-            else
-                TutionDays.get(StudentID).DaysWentToTution.pop();
+            if(value == 1) {                                                                        // + Button
+                TutionDays.get(StudentID).DaysWentToTution.add(getCurrentDateInStringFormat());
+            }
+            else if(TutionDays.get(StudentID).DaysWentToTution.size() > 0) {                        // - Button
+                int lastIndex = TutionDays.get(StudentID).DaysWentToTution.size()-1;
+                TutionDays.get(StudentID).DaysWentToTution.remove(lastIndex);
+            }
 
             OverwriteSharedPreference(sharedPreference, TutionList,TutionDays);
             return true;
@@ -215,8 +222,15 @@ public class TutionProfileActivity extends AppCompatActivity {
 
         //Apply to add days
 
+        Log.v("TutionDays",gson.toJson(TutionDays));
         editor.putString("TutionDays", gson.toJson(TutionDays));
         editor.apply();
+    }
+
+    private String getCurrentDateInStringFormat() {
+        DateFormat dateFormater = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = new Date();
+        return dateFormater.format(date);
     }
 
     private void MakeToast(String message) {

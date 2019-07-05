@@ -142,6 +142,8 @@ public class ChangeInformationActivity extends AppCompatActivity {
 
         TutionList = getPreStoredInformationFromSharedPreference(sharedPreference);
 
+        ArrayList <TutionDayInformation> TutionDays = getPreStoredDayInformationFromSharedPreference(sharedPreference);
+
 
         // Overwrite sharedPreference
 
@@ -152,7 +154,7 @@ public class ChangeInformationActivity extends AppCompatActivity {
         TutionList.get(StudentID).TotalDays = tutionInfo.TotalDays;
         TutionList.get(StudentID).DaysCompleted= tutionInfo.DaysCompleted;
 
-        OverwriteSharedPreference(sharedPreference,TutionList);
+        OverwriteSharedPreference(sharedPreference,TutionList,TutionDays);
 
 
     }
@@ -177,14 +179,38 @@ public class ChangeInformationActivity extends AppCompatActivity {
         return  PreStoredList;
     }
 
-    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information) {
+    private ArrayList< TutionDayInformation > getPreStoredDayInformationFromSharedPreference(SharedPreferences sharedPreferences) {
+        Gson gson = new Gson();
+
+        String keyOfSharedPreferences = "TutionDays";
+
+        String StoredDaysString = sharedPreferences.getString(keyOfSharedPreferences , null);
+
+        java.lang.reflect.Type type = new TypeToken<ArrayList<TutionDayInformation> >() {}.getType();
+
+        ArrayList < TutionDayInformation > PreStoredDays;
+
+        if(StoredDaysString != null)
+            PreStoredDays = gson.fromJson(StoredDaysString , type);
+        else
+            PreStoredDays = new ArrayList<>();
+
+        return PreStoredDays;
+    }
+
+    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays) {
         Gson gson = new Gson();
         SharedPreferences.Editor editor = sharedPreference.edit();
 
+        //Apply to tutionDays
         editor.clear();
         editor.putString("TutionList", gson.toJson(information));
         editor.apply();
 
+        //Apply to add days
+
+        editor.putString("TutionDays", gson.toJson(TutionDays));
+        editor.apply();
     }
 
     private void SetUpMinMaxNumberPickers(NumberPicker numberPicker,int min, int max) {
