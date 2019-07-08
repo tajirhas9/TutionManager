@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.ourcuet.tutionmanager">
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -9,7 +11,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ListOfDaysActivity"></activity>
+        <receiver
+            android:name=".BroadcastNotification"
+            android:enabled="true"
+            android:exported="true"></receiver>
+
+        <service
+            android:name=".PushNotification"
+            android:exported="false" />
+
+        <activity android:name=".ListOfDaysActivity" />
         <activity android:name=".ChangeInformationActivity" />
         <activity android:name=".TutionProfileActivity" />
         <activity android:name=".NewTutionRegistrationActivity" />

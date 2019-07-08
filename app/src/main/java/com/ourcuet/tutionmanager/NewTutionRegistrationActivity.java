@@ -116,7 +116,7 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
 
         TutionDays.add(NewTutionDayInformation(tutionInfo.TutionID));
 
-        OverwriteSharedPreference(sharedPreference,TutionList,TutionDays);
+        OverwriteSharedPreference(sharedPreference,TutionList,TutionDays,(getLatestAvailableID()+1) );
 
 
     }
@@ -169,7 +169,7 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
         return tutionDayInformation;
     }
 
-    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays) {
+    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays, Integer nextID) {
         Gson gson = new Gson();
 
         SharedPreferences.Editor editor = sharedPreference.edit();
@@ -181,6 +181,11 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
         //Apply to add days
 
         editor.putString("TutionDays", gson.toJson(TutionDays));
+        editor.apply();
+
+        //Increase NextID
+
+        editor.putString("NextID",gson.toJson(nextID));
         editor.apply();
 
     }
@@ -198,9 +203,8 @@ public class NewTutionRegistrationActivity extends AppCompatActivity {
 
         SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
 
-        TutionList = getPreStoredInformationFromSharedPreference(sharedPreference);
+        return Integer.parseInt(sharedPreference.getString("NextID",Integer.valueOf(1).toString()));
 
-        return (TutionList.size()+1);
     }
 
     private void Redirect() {

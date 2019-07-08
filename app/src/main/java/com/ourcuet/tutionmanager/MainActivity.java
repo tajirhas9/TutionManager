@@ -1,5 +1,9 @@
 package com.ourcuet.tutionmanager;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -23,6 +27,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -45,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.v("App says","Welcome to Tution Manager");
         DisplayTutionList();
+        SetUpNotificationSystem();
     }
 
     private void DisplayTutionList() {
@@ -68,8 +74,8 @@ public class MainActivity extends AppCompatActivity {
         else {
             for(int i = 0; i < TutionList.size(); ++i) {
                 tution = TutionList.get(i);
-
-                DisplayNewTution(tution.StudentName, tution.TutionID);
+                Log.v("Tution ID", tution.TutionID.toString());
+                DisplayNewTution(tution.StudentName, i+1);
             }
         }
     }
@@ -168,6 +174,16 @@ public class MainActivity extends AppCompatActivity {
         spannableString.setSpan(new ForegroundColorSpan(Color.BLUE),StartIndexOfDetailsText, string.length(),0);
 
         return spannableString;
+    }
+
+    private void SetUpNotificationSystem() {
+
+        Intent notifyIntent = new Intent(this,BroadcastNotification.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast
+                (this, 1, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,  System.currentTimeMillis(),
+                1000 * 60 * 60 * 24, pendingIntent);
     }
 
     private void RedirectToRegistrationActivity() {

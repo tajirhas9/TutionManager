@@ -1,7 +1,9 @@
 package com.ourcuet.tutionmanager;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,6 +48,8 @@ public class TutionProfileActivity extends AppCompatActivity {
         SetUpDecreaseButton();
         SetUpResetButton();
         SetUpChangeButton();
+        SetUpDeleteButton();
+        SetUpDaysCoveredButton();
     }
 
     private void FillLayout() {
@@ -70,6 +74,8 @@ public class TutionProfileActivity extends AppCompatActivity {
         Gson gson = new Gson();
 
         String StoredListString = sharedPreference.getString("TutionList", null);
+
+        Log.v("StoredListString", StoredListString);
 
         java.lang.reflect.Type type = new TypeToken<ArrayList< TutionInfo > >(){}.getType();
 
@@ -129,6 +135,28 @@ public class TutionProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void SetUpDeleteButton() {
+        Button DeleteButton = findViewById(R.id.DeleteStudent);
+
+        DeleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ShowAlertDialogue();
+            }
+        });
+    }
+
+    private void SetUpDaysCoveredButton() {
+        Button DaysCoveredButton = findViewById(R.id.ShowDaysButton);
+
+        DaysCoveredButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RedirectToListOfDaysActivity();
+            }
+        });
+    }
+
     private boolean UpdateDaysCompletedByOne(Integer value) {
 
         SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
@@ -148,7 +176,7 @@ public class TutionProfileActivity extends AppCompatActivity {
                 TutionDays.get(StudentID).DaysWentToTution.remove(lastIndex);
             }
 
-            OverwriteSharedPreference(sharedPreference, TutionList,TutionDays);
+            OverwriteSharedPreference(sharedPreference, TutionList,TutionDays,getLatestAvailableID());
             return true;
         }
         else {
@@ -167,9 +195,30 @@ public class TutionProfileActivity extends AppCompatActivity {
 
         TutionList.get(StudentID).DaysCompleted = 0;
 
-        OverwriteSharedPreference(sharedPreference, TutionList,TutionDays);
+        OverwriteSharedPreference(sharedPreference, TutionList,TutionDays, getLatestAvailableID());
     }
 
+    private void ShowAlertDialogue() {
+        new AlertDialog.Builder(this)
+                .setTitle("Remove this Student?")
+                .setMessage("Are you sure you want to remove this student from your Tution List?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        RemoveStudent();
+                        Log.v("Response" , "True");
+                        ReturnToMainActivity();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MakeToast("Student is not removed");
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
 
     //Returns overall tutionlist
 
@@ -211,20 +260,52 @@ public class TutionProfileActivity extends AppCompatActivity {
         return PreStoredDays;
     }
 
-    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays) {
+    private void OverwriteSharedPreference(SharedPreferences sharedPreference, ArrayList < TutionInfo > information, ArrayList<TutionDayInformation> TutionDays, Integer nextID) {
         Gson gson = new Gson();
+
         SharedPreferences.Editor editor = sharedPreference.edit();
 
-        //Apply to tutionDays
         editor.clear();
         editor.putString("TutionList", gson.toJson(information));
         editor.apply();
 
         //Apply to add days
 
-        Log.v("TutionDays",gson.toJson(TutionDays));
         editor.putString("TutionDays", gson.toJson(TutionDays));
         editor.apply();
+
+        //Increase NextID
+
+        editor.putString("NextID",gson.toJson(nextID));
+        editor.apply();
+
+    }
+
+    private boolean RemoveStudent() {
+        SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
+
+        ArrayList < TutionInfo > TutionList = getPreStoredTutionInformationFromSharedPreference(sharedPreference);
+        ArrayList <TutionDayInformation> TutionDays = getPreStoredDayInformationFromSharedPreference(sharedPreference);
+        Integer nextID = getLatestAvailableID();
+
+        TutionList.remove(TutionList.get(StudentID));
+        TutionDays.remove(TutionDays.get(StudentID));
+        Log.v("TutionList" , TutionList.toString());
+        OverwriteSharedPreference(sharedPreference, TutionList,TutionDays,nextID);
+
+        return true;
+    }
+
+
+    private Integer getLatestAvailableID() {
+        ArrayList < TutionInfo > TutionList = new ArrayList<>();
+
+        // Get prestored list from sharedPreference
+
+        SharedPreferences sharedPreference = getSharedPreferences("TutionManagerSharedPreference" , MODE_PRIVATE);
+
+        return Integer.parseInt(sharedPreference.getString("NextID",Integer.valueOf(0).toString()));
+
     }
 
     private String getCurrentDateInStringFormat() {
@@ -244,6 +325,12 @@ public class TutionProfileActivity extends AppCompatActivity {
 
     private void RedirectToChangeInformationActivity() {
         Intent intent = new Intent(this, ChangeInformationActivity.class);
+        intent.putExtra("StudentID",StudentID.toString());
+        startActivity(intent);
+    }
+
+    private void RedirectToListOfDaysActivity() {
+        Intent intent = new Intent(this, ListOfDaysActivity.class);
         intent.putExtra("StudentID",StudentID.toString());
         startActivity(intent);
     }
