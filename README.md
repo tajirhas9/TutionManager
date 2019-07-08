@@ -1,4 +1,4 @@
-# Tution Manager
+# Tuition Manager
 
 ## Feature :
     1. Count how many days you have covered in your tuitions
